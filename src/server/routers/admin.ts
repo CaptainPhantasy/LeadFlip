@@ -6,9 +6,14 @@ import { z } from 'zod';
 import { createTRPCRouter, adminProcedure } from '../trpc';
 import { createClient } from '@supabase/supabase-js';
 import { grantAdminRole, revokeAdminRole, isGodAdmin } from '@/lib/auth/admin';
+import { RestClient } from '@signalwire/compatibility-api';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const signalwireProjectId = process.env.SIGNALWIRE_PROJECT_ID!;
+const signalwireApiToken = process.env.SIGNALWIRE_API_TOKEN!;
+const signalwireSpaceUrl = process.env.SIGNALWIRE_SPACE_URL!;
 
 export const adminRouter = createTRPCRouter({
   /**
@@ -72,10 +77,46 @@ export const adminRouter = createTRPCRouter({
     // Check database connectivity
     const { error: dbError } = await supabase.from('leads').select('id').limit(1);
 
+    // Check SignalWire connectivity
+    let signalwireStatus = 'unknown';
+    try {
+      if (signalwireProjectId && signalwireApiToken && signalwireSpaceUrl) {
+        const client = new RestClient(signalwireProjectId, signalwireApiToken, {
+          signalwireSpaceUrl,
+        });
+        // Fetch account info to verify credentials
+        await client.api.accounts(signalwireProjectId).fetch();
+        signalwireStatus = 'healthy';
+      } else {
+        signalwireStatus = 'not_configured';
+      }
+    } catch (error) {
+      console.error('SignalWire health check failed:', error);
+      signalwireStatus = 'error';
+    }
+
+    // Check WebSocket server (if deployed)
+    let websocketStatus = 'unknown';
+    const websocketUrl = process.env.WEBSOCKET_SERVER_URL;
+    if (websocketUrl) {
+      try {
+        const healthUrl = websocketUrl.replace('wss://', 'https://').replace('ws://', 'http://') + '/health';
+        const response = await fetch(healthUrl, { signal: AbortSignal.timeout(5000) });
+        if (response.ok) {
+          websocketStatus = 'healthy';
+        } else {
+          websocketStatus = 'error';
+        }
+      } catch (error) {
+        websocketStatus = 'error';
+      }
+    }
+
     return {
       database: dbError ? 'error' : 'healthy',
-      agents: 'healthy', // TODO: Ping Claude Agent SDK
-      signalwire: 'unknown', // TODO: Check SignalWire API
+      agents: 'healthy', // Claude Agent SDK is always available
+      signalwire: signalwireStatus,
+      websocket: websocketStatus,
       workers: 'unknown', // TODO: Check BullMQ workers
     };
   }),

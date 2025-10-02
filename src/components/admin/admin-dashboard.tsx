@@ -123,6 +123,10 @@ export function AdminDashboard() {
               status={systemHealth.data?.signalwire || 'unknown'}
             />
             <HealthItem
+              label="WebSocket Server"
+              status={systemHealth.data?.websocket || 'unknown'}
+            />
+            <HealthItem
               label="BullMQ Workers"
               status={systemHealth.data?.workers || 'unknown'}
             />
