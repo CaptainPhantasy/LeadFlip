@@ -1,0 +1,80 @@
+# Fly.io configuration for LeadFlip WebSocket Server
+# Deploy with: fly deploy -c fly.websocket.toml
+
+app = "leadflip-websocket"
+primary_region = "iad" # US East (closest to Twilio + OpenAI)
+
+[build]
+  dockerfile = "Dockerfile.websocket"
+
+[env]
+  NODE_ENV = "production"
+  WEBSOCKET_PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false # Keep running for WebSocket connections
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+
+[metrics]
+  port = 9091
+  path = "/metrics"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Auto-scaling configuration
+[scaling]
+  min_machines = 1
+  max_machines = 3
+
+# Enable health checks
+[checks]
+  [checks.websocket_health]
+    port = 8080
+    type = "http"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "get"
+    path = "/health"

@@ -43,3 +43,9 @@ checkpoints/
 
 # reports
 reports/
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# session storage (temporary file-based sessions)
+.sessions/
