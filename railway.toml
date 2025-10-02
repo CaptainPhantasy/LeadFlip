@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.websocket"
 
 [deploy]
-startCommand = "node dist/server/websocket-server.js"
+startCommand = "node dist/src/server/websocket-server.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
