@@ -15,7 +15,7 @@
 
 import WebSocket, { WebSocketServer } from 'ws';
 import { createServer } from 'http';
-import { CallAgentSubagent } from '@/lib/agents/call-agent';
+import { CallAgentSubagent } from '../lib/agents/call-agent';
 import { createClient } from '@supabase/supabase-js';
 
 const PORT = process.env.WEBSOCKET_PORT || 8080;
