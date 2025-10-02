@@ -75,7 +75,7 @@ export const adminRouter = createTRPCRouter({
     return {
       database: dbError ? 'error' : 'healthy',
       agents: 'healthy', // TODO: Ping Claude Agent SDK
-      twilio: 'unknown', // TODO: Check Twilio API
+      signalwire: 'unknown', // TODO: Check SignalWire API
       workers: 'unknown', // TODO: Check BullMQ workers
     };
   }),

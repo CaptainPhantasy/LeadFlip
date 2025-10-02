@@ -119,8 +119,8 @@ export function AdminDashboard() {
               status={systemHealth.data?.agents || 'unknown'}
             />
             <HealthItem
-              label="Twilio Voice"
-              status={systemHealth.data?.twilio || 'unknown'}
+              label="SignalWire Voice"
+              status={systemHealth.data?.signalwire || 'unknown'}
             />
             <HealthItem
               label="BullMQ Workers"

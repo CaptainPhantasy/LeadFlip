@@ -802,7 +802,9 @@ const classifierOptions: ClaudeAgentOptions = {
 
 ## Current Project Status
 
-**Last Updated:** October 1, 2025 at 10:18 PM EDT
+**Last Updated:** October 2, 2025 at 12:55 AM EDT
+**CURRENT WORK:** Deploying WebSocket server to Railway - fixing Docker build and start command paths
+**CONTEXT WARNING:** Running low on context tokens - be methodical and careful with changes
 
 ### ✅ Phase 1 Complete (100%)
 
@@ -849,7 +851,13 @@ const classifierOptions: ClaudeAgentOptions = {
 - ✅ SignalWire integration complete
 - ✅ Docker configurations created (Dockerfile.websocket, Dockerfile.worker)
 - ✅ Deployment scripts ready (Railway and Fly.io)
-- ⚠️ NOT YET deployed to Railway/Fly.io (ready to deploy)
+- 🚧 **ACTIVELY DEPLOYING to Railway** (Oct 2, 12:55 AM)
+  - Railway project created: de457e10-447b-4e2d-811d-8d96d61c9b45
+  - Service: websocket-server
+  - Status: Docker build succeeds, fixing start command path
+  - Issue: TypeScript compiles to `dist/src/server/` not `dist/server/`
+  - Fix: Updated `railway.toml` startCommand to match actual output path
+  - Next: Need environment variables (OPENAI_API_KEY, ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY)
 
 ### 🚧 Phase 2 In Progress (40%)
 
