@@ -91,8 +91,8 @@ export function AIInterviewChat() {
 
   const finalizeInterview = trpc.interview.finalizeInterview.useMutation({
     onSuccess: (data) => {
-      // Redirect to lead confirmation page
-      window.location.href = `/consumer/leads/${data.lead_id}`
+      // Redirect to dashboard to see the newly created lead
+      window.location.href = `/consumer/dashboard`
     },
   })
 
