@@ -259,6 +259,36 @@ CREATE TABLE IF NOT EXISTS prospective_businesses (
 );
 
 -- ============================================================================
+-- PART 2B: COLUMN GUARDS (Idempotent schema reconciliation)
+-- ============================================================================
+-- Ensures all expected columns exist even if table was created by older migration
+-- This prevents compilation failures in functions that reference these columns
+
+-- Ensure leads.contact_phone exists
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'leads' AND column_name = 'contact_phone'
+  ) THEN
+    ALTER TABLE public.leads ADD COLUMN contact_phone VARCHAR(20);
+    COMMENT ON COLUMN public.leads.contact_phone IS 'Consumer phone number for AI calling';
+  END IF;
+END$$;
+
+-- Ensure leads.contact_email exists
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'leads' AND column_name = 'contact_email'
+  ) THEN
+    ALTER TABLE public.leads ADD COLUMN contact_email VARCHAR(255);
+    COMMENT ON COLUMN public.leads.contact_email IS 'Consumer email for notifications';
+  END IF;
+END$$;
+
+-- ============================================================================
 -- PART 3: INDEXES
 -- ============================================================================
 
@@ -272,6 +302,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_location ON leads USING GIST(location_point
 CREATE INDEX IF NOT EXISTS idx_leads_service_category ON leads(service_category);
 CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_quality_score ON leads(quality_score);
+CREATE INDEX IF NOT EXISTS idx_leads_contact_phone ON leads(contact_phone);
 
 -- Businesses indexes
 CREATE INDEX IF NOT EXISTS idx_businesses_user_id ON businesses(user_id);
