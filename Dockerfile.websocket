@@ -17,16 +17,23 @@ COPY tsconfig.json ./
 RUN npm ci --only=production && \
     npm cache clean --force
 
-# Copy source files needed for WebSocket server
-COPY src/server/websocket-server.ts ./src/server/
-COPY src/lib/agents/call-agent.ts ./src/lib/agents/
-COPY src/types/ ./src/types/
+# Copy all source files (needed for path aliases to work)
+COPY src/ ./src/
 
 # Install TypeScript and build dependencies
 RUN npm install -D typescript @types/node @types/ws
 
-# Build TypeScript
-RUN npx tsc --outDir dist --esModuleInterop --resolveJsonModule --skipLibCheck \
+# Build TypeScript with proper configuration
+RUN npx tsc \
+    --outDir dist \
+    --target ES2020 \
+    --module commonjs \
+    --esModuleInterop \
+    --resolveJsonModule \
+    --skipLibCheck \
+    --downlevelIteration \
+    --baseUrl . \
+    --paths.@/*=src/* \
     src/server/websocket-server.ts
 
 # Production stage
