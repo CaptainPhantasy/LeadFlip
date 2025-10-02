@@ -167,7 +167,8 @@ export const interviewRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const agent = getInterviewAgent();
 
-      const extractedInfo = await agent.finalizeInterview(input.sessionId);
+      // Finalize interview - this returns extracted_info AND quality_score
+      const { extracted_info: extractedInfo, quality_score } = await agent.finalizeInterview(input.sessionId);
 
       // Get user details from Clerk to use as fallback contact info
       const { clerkClient } = await import('@clerk/nextjs/server');
@@ -205,7 +206,7 @@ export const interviewRouter = createTRPCRouter({
           location_state: extractedInfo.location_state,
           contact_phone: contactPhone,
           contact_email: contactEmail,
-          quality_score: agent.getSession(input.sessionId)?.quality_score || 0,
+          quality_score: quality_score, // Now using captured value instead of deleted session
           status: 'pending',
           classified_data: extractedInfo,
         })
@@ -219,6 +220,7 @@ export const interviewRouter = createTRPCRouter({
       return {
         lead_id: lead.id,
         extracted_info: extractedInfo,
+        quality_score: quality_score,
       };
     }),
 });

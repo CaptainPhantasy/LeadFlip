@@ -587,10 +587,13 @@ IMPORTANT:
   /**
    * Finalize interview and return structured lead data
    */
-  async finalizeInterview(sessionId: string): Promise<ExtractedProblemInfo> {
+  async finalizeInterview(sessionId: string): Promise<{
+    extracted_info: ExtractedProblemInfo;
+    quality_score: number;
+  }> {
     // Check memory first, then try loading from disk
     let session = this.sessions.get(sessionId);
-    
+
     // [2025-10-01 8:35 PM] Agent 1: Fixed TypeScript error - use loaded directly
     if (!session) {
       const loaded = await loadSession(sessionId);
@@ -608,10 +611,21 @@ IMPORTANT:
       throw new Error('Interview is not complete yet');
     }
 
-    // Clean up session after finalization
+    // Validate required fields BEFORE deletion
+    if (!session.extracted_info.problem_description) {
+      throw new Error('Problem description is required but was not extracted');
+    }
+
+    // Capture data BEFORE deleting session
+    const result = {
+      extracted_info: session.extracted_info as ExtractedProblemInfo,
+      quality_score: session.quality_score,
+    };
+
+    // Clean up session after capturing data
     this.sessions.delete(sessionId);
     await deleteSession(sessionId);
 
-    return session.extracted_info as ExtractedProblemInfo;
+    return result;
   }
 }
