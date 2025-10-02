@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json ./
-COPY tsconfig.json ./
+COPY tsconfig.websocket.json ./
 
 # Install dependencies
 RUN npm ci --only=production && \
@@ -23,18 +23,8 @@ COPY src/ ./src/
 # Install TypeScript and build dependencies
 RUN npm install -D typescript @types/node @types/ws
 
-# Build TypeScript with proper configuration
-RUN npx tsc \
-    --outDir dist \
-    --target ES2020 \
-    --module commonjs \
-    --esModuleInterop \
-    --resolveJsonModule \
-    --skipLibCheck \
-    --downlevelIteration \
-    --baseUrl . \
-    --paths.@/*=src/* \
-    src/server/websocket-server.ts
+# Build TypeScript using tsconfig.websocket.json
+RUN npx tsc --project tsconfig.websocket.json
 
 # Production stage
 FROM node:20-alpine AS production
