@@ -171,7 +171,8 @@ export const interviewRouter = createTRPCRouter({
 
       // Get user details from Clerk to use as fallback contact info
       const { clerkClient } = await import('@clerk/nextjs/server');
-      const user = await clerkClient.users.getUser(ctx.userId);
+      const clerk = await clerkClient();
+      const user = await clerk.users.getUser(ctx.userId);
 
       // Merge extracted info with Clerk user data (extracted info takes priority)
       const contactPhone = extractedInfo.contact_phone || user.phoneNumbers?.[0]?.phoneNumber;
